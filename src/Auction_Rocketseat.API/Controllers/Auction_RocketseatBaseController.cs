@@ -5,4 +5,5 @@ namespace Auction_Rocketseat.API.Controllers;
 [ApiController]
 public class Auction_RocketseatBaseController : ControllerBase
 {
+
 }

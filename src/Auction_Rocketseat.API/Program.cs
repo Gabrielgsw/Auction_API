@@ -1,28 +1,29 @@
 using Auction_Rocketseat.API.Filters;
+using Auction_Rocketseat.API.Repositories.DataAcess;
 using Auction_Rocketseat.API.Services;
+using Auction_Rocketseat.API.UseCases.Auctions.GetCurrent;
 using Auction_Rocketseat.API.UseCases.Offers.CreateOffer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Auction_Rocketseat.API.Contracts;
+using Auction_Rocketseat.API.Repositories;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-// Adicionando o token pelo swagger
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = @"JWT Authorization header using the Bearer scheme.
-                        Enter 'Bearer' [space] and then your token in the text input below.
-                        Example: 'Bearer' 12345abcdef",
+                      Enter 'Bearer' [space] and then your token in the text input below;
+                      Example: 'Bearer 12345abcdef'",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
-
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -39,21 +40,29 @@ builder.Services.AddSwaggerGen(options =>
                 Name = "Bearer",
                 In = ParameterLocation.Header
             },
-            new List<String>()
+            new List<string>()
         }
     });
 });
 
-// Trabalhando com injecao de dependencia
-builder.Services.AddScoped<AuthenticationUserAttribute>();
-builder.Services.AddScoped<LoggedUser>();
+builder.Services.AddScoped<AuthenticationUserAttibute>();
+builder.Services.AddScoped<ILoggedUser, LoggedUser>();
 builder.Services.AddScoped<CreateOfferUseCase>();
+builder.Services.AddScoped<GetCurrentAuctionUseCase>();
+builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
+builder.Services.AddScoped<IOfferRepository, OfferRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+
+builder.Services.AddDbContext<Auction_RocketseatDbContext>(options =>
+{
+    options.UseSqlite(@"Data Source=D:\Workspace\leilaoDbNLW.db");
+});
 
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

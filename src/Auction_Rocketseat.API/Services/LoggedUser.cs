@@ -1,37 +1,32 @@
 ﻿using Auction_Rocketseat.API.Entities;
-using Auction_Rocketseat.API.Repositories;
+using Auction_Rocketseat.API.Contracts;
 
 namespace Auction_Rocketseat.API.Services;
 
-public class LoggedUser
+public class LoggedUser : ILoggedUser
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IUserRepository _repository;
 
-    public LoggedUser(IHttpContextAccessor httpContext)
+    public LoggedUser(IHttpContextAccessor httpContext, IUserRepository repository)
     {
         _httpContextAccessor = httpContext;
+        _repository = repository;
     }
-
-    
 
     public User User()
     {
-        var repository = new Auction_RocketseatDbContext();
-
         var token = TokenOnRequest();
         var email = FromBase64String(token);
 
-        return repository.Users.First(user => user.Email.Equals(email));
+        return _repository.GetUserByEmail(email);
     }
 
     private string TokenOnRequest()
     {
         var authentication = _httpContextAccessor.HttpContext!.Request.Headers.Authorization.ToString();
-        //"Bearer aasidjiajsdastoken="   
 
-       
-
-        return authentication["Bearer ".Length..]; // -> Retornar uma string a partir da posicao 7
+        return authentication["Bearer ".Length..];
     }
 
     private string FromBase64String(string base64)
@@ -39,5 +34,10 @@ public class LoggedUser
         var data = Convert.FromBase64String(base64);
 
         return System.Text.Encoding.UTF8.GetString(data);
+    }
+
+    public User user()
+    {
+        throw new NotImplementedException();
     }
 }
